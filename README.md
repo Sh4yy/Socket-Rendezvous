@@ -18,13 +18,13 @@ Response code is in Big Endian format
 | 1 byte response code |
 ```
 #### Response Codes
-**1020**: Pulse was successful and on time
-**1050**: Must re-verify you're address
-**1060**: Client address was not found
+**1020**: Pulse was successful and on time\
+**1050**: Must re-verify you're address\
+**1060**: Client address was not found\
 
 # Routes
 ### Register a new Client
-Register a new client on the server
+Register a new client on the server\
 **Route**: `/register`\
 **Method** : `POST`\
 **Port** : `5025`
@@ -39,7 +39,8 @@ Register a new client on the server
 ```
 
 ### Re-Verify a Client
-Re-Verify the client address after not being responsive for less than (Error Time) + (1 x Pulse Interval)
+Re-Verify the client address after not being responsive for less than\
+(Error Time) + (1 x Pulse Interval)\
 **Route**: `/verify`\
 **Method** : `POST`\
 **Port** : `5025`
@@ -62,7 +63,7 @@ Re-Verify the client address after not being responsive for less than (Error Tim
 ```
 
 ### Logout the Client
-Logout the client from the Server
+Logout the client from the Server\
 **Route**: `/logout`\
 **Method** : `POST`\
 **Port** : `5025`
@@ -83,7 +84,7 @@ Logout the client from the Server
 ```
 
 ### Get another Client's UDP Address
-Get another client's UDP address to perform peer to peer connection
+Get another client's UDP address to perform peer to peer connection\
 **Route**: `/peer/<client_id>/udp`\
 **Method** : `GET`\
 **Port** : `5025`
@@ -102,7 +103,7 @@ Get another client's UDP address to perform peer to peer connection
 }
 ```
 ### Get another Client's status
-Get the time interval since the last pulse from the target
+Get the time interval since the last pulse from the target\
 **Route**: `/peer/<client_id>/udp/status`\
 **Method** : `GET`\
 **Port** : `5025`
@@ -121,6 +122,6 @@ Get the time interval since the last pulse from the target
 }
 ```
 **Status Values**
-- ONLINE: the client has been pulsing the server on the correct intervals
+- ONLINE: the client has been pulsing the server on the correct intervals\
 - PENDING: the client has not sent a pulse to the server for over the default Pulse Interval and the server is waiting for the fixed Error time before loging out the client from the server.
 
