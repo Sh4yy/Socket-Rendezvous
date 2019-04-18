@@ -45,7 +45,7 @@ def verify():
 
 @mod.route('/logout')
 def logout():
-
+    pass
 
 @mod.route('/peer/<client_id>/udp/status')
 def get_client_status(client_id):

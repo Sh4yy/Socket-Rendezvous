@@ -9,7 +9,7 @@ A general purpose socket Rendezvous server for managing and implementing peer to
 ##### Payload Design
 ```
 # Length must be in Big Endian format
-| 1 byte length of address | address | 
+| 1 byte length of address | address |
 ```
 
 ##### Response
@@ -71,6 +71,7 @@ Logout the client from the Server\
 **Request Body**:
 ```json
 {
+    "client_id": "hex string",
     "private_id": "hex string"
 }
 ```
@@ -91,7 +92,8 @@ Get another client's UDP address to perform peer to peer connection\
 
 **Query Parameters**
 - client_id: Target's client id
-- private_key: Requester's private key for authentication
+- public_id: Requester's public id for authentication
+- private_id: Requester's private id for authentication
 
 **Response**:
 ```json
@@ -124,4 +126,3 @@ Get the time interval since the last pulse from the target\
 **Status Values**
 - ONLINE: the client has been pulsing the server on the correct intervals\
 - PENDING: the client has not sent a pulse to the server for over the default Pulse Interval and the server is waiting for the fixed Error time before loging out the client from the server.
-
