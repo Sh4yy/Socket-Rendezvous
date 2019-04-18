@@ -3,7 +3,7 @@
 from time import time, sleep
 import functools
 from sortedcollections import SortedList
-from threading import Thread
+from threading import Thread, Lock
 from enum import Enum
 
 
@@ -20,6 +20,7 @@ class ScheduleItem:
         self.client_id = client_id
         self.status = status
         self.exp = None
+        self.lock = Lock
         if ttl: self.set_exp(ttl)
 
     def set_exp(self, ttl):
@@ -66,18 +67,20 @@ class Scheduler:
             if not item.is_expired():
                 break
 
-            self.item_list.remove(item)
-            if item.status == Status.Online:
-                item.set_exp(self.error_time)
-                item.status = Status.Pending
-                self.item_list.add(item)
+            with self.lock:
+                self.item_list.remove(item)
+                if item.status == Status.Online:
+                    item.set_exp(self.error_time)
+                    item.status = Status.Pending
+                    self.item_list.add(item)
 
-            elif item.status == Status.Pending:
-                del self.item_map[item.client_id]
+                elif item.status == Status.Pending:
+                    del self.item_map[item.client_id]
 
     def add(self, item):
-        self.item_list.add(item)
-        self.item_map[item.client_id] = item
+        with self.lock:
+            self.item_list.add(item)
+            self.item_map[item.client_id] = item
 
     def get(self, key):
         if key in self.item_map:
@@ -87,37 +90,35 @@ class Scheduler:
 
     def expire(self, key, ttl):
         status = self.status(key)
-        if status == Status.Online:
-            self.item_map[key].set_exp(ttl)
-            return True
-
-        elif status == Status.Pending:
+        if status == Status.Pending:
             raise NeedsVerification()
-
         elif sattus == Status.DNE:
             raise DoesNotExist()
+        with self.lock:
+           self.item_map[key].set_exp(ttl)
+           return True
 
     def delete(self, key):
         status = self.status(key)
         if status == Status.DNE:
             return False
-
-        item = self.item_map[key]
-        self.item_list.remove(item)
-        del self.item_map[key]
-        return True
+        with self.lock:
+            item = self.item_map[key]
+            self.item_list.remove(item)
+            del self.item_map[key]
+            return True
 
     def verify(self, key, tts):
         status = self.status(key)
-        if status == Status.Pending:
+        if status == Status.DNE:
+            raise DoesNotExist()
+        elif status == Status.Online:
+            return False
+        with self.lock:
             item = item_map[key]
             item.set_exp(tts)
             item.status = Status.Online
             return True
-        elif status == Status.DNE:
-            raise DoesNotExist()
-        else:
-            return False
 
     def status(self, key):
         if key in self.item_map:
