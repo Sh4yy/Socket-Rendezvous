@@ -1,57 +1,59 @@
-from Utilities.Database import reg_cache, scheduler, Client
 from flask import Blueprint, request, jsonify, abort
-from Utilities.Scheduler import DoesNotExist
-import time
+from Utilities.Decorators import authorized
+from Controllers.Controller import Controller
+from time import time
+
+
+mod = Blueprint('routes', __name__)
 
 
 @mod.route('/register')
 def register():
 
-    client = Client()
-    reg_cache[client.client_id] = client
+    client = Controller.register()
 
     return jsonify({
         "client_id": client.peer.id_hex,
         "private_id": client.peer.key_hex,
-        "timestamp": time()
+        "timestamp": time(),
+        "ok": True
     })
+
 
 @mod.route('/verify')
+@authorized
 def verify():
 
-    body = request.json
-    if 'client_id' not in body or 'private_id' not in body:
-        return abort(400)
-
-    client_id = body['client_id']
-    private_id = body['private_id']
-
-    client = scheduler.get(client_id)
-    if not client:
-        return abort(404)
-
-    if client.peer.key_hex != private_key:
-        return abort(401)
-
-    result = scheduler.verify(client_id)
-    if not result:
-        return abort(400, 'not a valid request')
+    client_id, private_id = g.client_id, g.private_id
+    result = Controller.verify(client_id, private_id)
 
     return jsonify({
-        "client_id": client.peer.id_hex,
-        "verified": True,
-        "timestamp": time()
+        "client_id": client_id,
+        "timestamp": time(),
+        "ok": result
     })
 
+
 @mod.route('/logout')
+@authorized
 def logout():
-    pass
+    
+    client_id, private_id = g.client_id, g.private_id
+    result = Controller.logout(client_id, private_id)
+
+    return jsonify({
+            "client_id": client_id,
+            "ok": result
+        })
+
 
 @mod.route('/peer/<client_id>/udp/status')
+@authorized
 def get_client_status(client_id):
     pass
 
 @mod.route('/peer/<client_id>/udp/address')
 @mod.route('/peer/<client_id>/udp')
+@authorized
 def get_client_udp_address(client_id):
     pass

@@ -9,7 +9,7 @@ A general purpose socket Rendezvous server for managing and implementing peer to
 ##### Payload Design
 ```
 # Length must be in Big Endian format
-| 1 byte length of address | address |
+| 1 byte length of private_key | private_key |
 ```
 
 ##### Response

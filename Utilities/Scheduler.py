@@ -1,5 +1,3 @@
-## this is the main scheduler class
-## scheduler takes care of expirations and users
 from time import time, sleep
 import functools
 from sortedcollections import SortedList
@@ -21,7 +19,8 @@ class ScheduleItem:
         self.status = status
         self.exp = None
         self.lock = Lock
-        if ttl: self.set_exp(ttl)
+        if ttl:
+            self.set_exp(ttl)
 
     def set_exp(self, ttl):
         """
@@ -33,15 +32,16 @@ class ScheduleItem:
     def is_expired(self):
         return time() > self.exp
 
-    def __lt__ (self, other):
+    def __lt__(self, other):
         return self.exp < other.exp
 
-    def __eq__ (self, other):
+    def __eq__(self, other):
         return self.exp == other.exp
 
     def __repr__(self):
         template = "ScheduleItem(client_id={}, exp={}, status={})"
         return template.format(self.client_id, self.exp - time(), self.status.value)
+
 
 class Scheduler:
 
@@ -50,6 +50,7 @@ class Scheduler:
         self.item_map = dict()
         self.item_list = SortedList()
         self.error_time = error_time
+        self.lock = Lock()
 
     def start_running(self):
 
@@ -67,15 +68,19 @@ class Scheduler:
             if not item.is_expired():
                 break
 
-            with self.lock:
-                self.item_list.remove(item)
-                if item.status == Status.Online:
-                    item.set_exp(self.error_time)
-                    item.status = Status.Pending
-                    self.item_list.add(item)
+            self._process_item(item)
 
-                elif item.status == Status.Pending:
-                    del self.item_map[item.client_id]
+    def _process_item(self, item):
+
+        with self.lock:
+            self.item_list.remove(item)
+            if item.status == Status.Online:
+                item.set_exp(self.error_time)
+                item.status = Status.Pending
+                self.item_list.add(item)
+
+            elif item.status == Status.Pending:
+                del self.item_map[item.client_id]
 
     def add(self, item):
         with self.lock:
@@ -84,7 +89,7 @@ class Scheduler:
 
     def get(self, key):
         if key in self.item_map:
-            return item_map[key]
+            return self.item_map[key]
 
         return None
 
@@ -92,11 +97,11 @@ class Scheduler:
         status = self.status(key)
         if status == Status.Pending:
             raise NeedsVerification()
-        elif sattus == Status.DNE:
+        elif status == Status.DNE:
             raise DoesNotExist()
         with self.lock:
-           self.item_map[key].set_exp(ttl)
-           return True
+            self.item_map[key].set_exp(ttl)
+            return True
 
     def delete(self, key):
         status = self.status(key)
@@ -108,15 +113,15 @@ class Scheduler:
             del self.item_map[key]
             return True
 
-    def verify(self, key, tts):
+    def verify(self, key, ttl):
         status = self.status(key)
         if status == Status.DNE:
             raise DoesNotExist()
         elif status == Status.Online:
             return False
         with self.lock:
-            item = item_map[key]
-            item.set_exp(tts)
+            item = self.item_map[key]
+            item.set_exp(ttl)
             item.status = Status.Online
             return True
 
@@ -127,8 +132,10 @@ class Scheduler:
         else:
             return Status.DNE
 
+
 class NeedsVerification(Exception):
     pass
+
 
 class DoesNotExist(Exception):
     pass
