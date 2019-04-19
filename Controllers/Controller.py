@@ -93,7 +93,7 @@ class Controller:
         client_id = cls.get_private_to_id(private_key)
         client = cls.get_client(client_id)
         client.set_address(host, port)
-        client.last_seen = time()
+        client.last_pulse = time()
 
         try:
             cls._scheduler.expire(client_id, ttl=30)

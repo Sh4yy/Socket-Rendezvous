@@ -34,6 +34,7 @@ class Client(ScheduleItem):
         self.peer = peer
         self.host = None
         self.port = None
+        self.last_pulse = 0
 
     def set_address(self, host, port):
         self.host = host
