@@ -1,7 +1,9 @@
 from Models import Client
-from Utilities.Scheduler import Scheduler
+from Utilities.Scheduler import Scheduler, NeedsVerification, DoesNotExist
 from Utilities.Config import config
 from datetime import timedelta
+from time import time
+from Utilities.HBExceptions import *
 
 
 class Controller:
@@ -74,3 +76,30 @@ class Controller:
             return cls._key_private[private_key]
 
         return None
+
+    @classmethod
+    def heartbeat(cls, private_key, host, port):
+        """
+        record a new heartbeat
+        :param private_key: client's private key
+        :param host: client's host string
+        :param port: client's port
+        :return: True on success
+        """
+
+        if not private_key in cls._key_private:
+            raise HBDoesNotExist()
+
+        client_id = cls.get_private_to_id(private_key)
+        client = cls.get_client(client_id)
+        client.set_address(host, port)
+        client.last_seen = time()
+
+        try:
+            cls._scheduler.expire(client_id, ttl=30)
+        except NeedsVerification:
+            raise HBNeedsVerification()
+        except DoesNotExist:
+            raise HBDoesNotExist()
+
+        return True

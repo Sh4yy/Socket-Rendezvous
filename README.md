@@ -8,13 +8,12 @@ A general purpose socket Rendezvous server for managing and implementing peer to
 - Error Time: 3 minutes
 ##### Payload Design
 ```
-# Length must be in Big Endian format
-| 1 byte length of private_key | private_key |
+| 32 byte private_key |
 ```
 
 ##### Response
 ```
-Response code is in Big Endian format
+Response code is in Network (Big Endian) format
 | 1 byte response code |
 ```
 #### Response Codes
@@ -34,7 +33,8 @@ Register a new client on the server\
 {
     "client_id": "hex string",
     "private_id": "hex string",
-    "timestamp": "unix timestamp"
+    "timestamp": "unix timestamp",
+    "ok": true
 }
 ```
 
@@ -45,20 +45,17 @@ Re-Verify the client address after not being responsive for less than\
 **Method** : `POST`\
 **Port** : `5025`
 
-**Request Body**:
+**Headers**:
 ```json
-{
-    "client_id": "hex string",
-    "private_id": "hex string"
-}
+{ "Authorization": "Bearer private_key" }
 ```
 
 **Response**:
 ```json
 {
     "client_id": "hex string",
-    "verified": true,
-    "timestamp": "unix timestamp"
+    "timestamp": "unix timestamp",
+    "ok": true
 }
 ```
 
@@ -68,13 +65,11 @@ Logout the client from the Server\
 **Method** : `POST`\
 **Port** : `5025`
 
-**Request Body**:
+**Headers**:
 ```json
-{
-    "client_id": "hex string",
-    "private_id": "hex string"
-}
+{ "Authorization": "Bearer private_key" }
 ```
+
 
 **Response**:
 ```json
@@ -92,8 +87,11 @@ Get another client's UDP address to perform peer to peer connection\
 
 **Query Parameters**
 - client_id: Target's client id
-- public_id: Requester's public id for authentication
-- private_id: Requester's private id for authentication
+
+**Headers**:
+```json
+{ "Authorization": "Bearer private_key" }
+```
 
 **Response**:
 ```json
@@ -101,7 +99,8 @@ Get another client's UDP address to perform peer to peer connection\
     "client_id": "hex string",
     "host": "ipv4 host address",
     "port": "int",
-    "timestamp": "unix timestamp"
+    "timestamp": "unix timestamp",
+    "ok": true
 }
 ```
 ### Get another Client's status
@@ -112,7 +111,11 @@ Get the time interval since the last pulse from the target\
 
 **Query Parameters**
 - client_id: Target's client id
-- private_key: Requester's private key for authentication
+
+**Headers**:
+```json
+{ "Authorization": "Bearer private_key" }
+```
 
 **Response**:
 ```json

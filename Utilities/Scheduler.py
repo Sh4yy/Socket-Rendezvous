@@ -100,7 +100,10 @@ class Scheduler:
         elif status == Status.DNE:
             raise DoesNotExist()
         with self.lock:
-            self.item_map[key].set_exp(ttl)
+            item = self.item_map(key)
+            self.item_list.remove(item)
+            item.set_exp(ttl)
+            self.item_list.add(item)
             return True
 
     def delete(self, key):
