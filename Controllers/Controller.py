@@ -24,6 +24,7 @@ class Controller:
         """
 
         client = Client()
+        cls._key_private[client.private_id] = client.client_id
         client.set_exp(timedelta(minutes=5).seconds)
         cls._scheduler.add(client)
         return client

@@ -7,7 +7,7 @@ from time import time
 mod = Blueprint('routes', __name__)
 
 
-@mod.route('/register')
+@mod.route('/register', methods=['POST', 'GET'])
 def register():
 
     client = Controller.register()
@@ -20,7 +20,7 @@ def register():
     })
 
 
-@mod.route('/verify')
+@mod.route('/verify', methods=['POST'])
 @authorized
 def verify():
 
@@ -34,7 +34,7 @@ def verify():
     })
 
 
-@mod.route('/logout')
+@mod.route('/logout', methods=['POST'])
 @authorized
 def logout():
     
@@ -47,7 +47,7 @@ def logout():
         })
 
 
-@mod.route('/peer/<client_id>/udp/status')
+@mod.route('/peer/<client_id>/udp/status', methods=['GET'])
 @authorized
 def get_client_status(client_id):
 
@@ -64,8 +64,8 @@ def get_client_status(client_id):
     })
 
 
-@mod.route('/peer/<client_id>/udp/address')
-@mod.route('/peer/<client_id>/udp')
+@mod.route('/peer/<client_id>/udp/address', methods=['GET'])
+@mod.route('/peer/<client_id>/udp', methods=['GET'])
 @authorized
 def get_client_udp_address(client_id):
 

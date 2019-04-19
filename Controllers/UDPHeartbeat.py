@@ -6,6 +6,8 @@ from Utilities.HBExceptions import *
 
 class UDPHeartbeat:
 
+    has_set = False
+
     def __init__(self, host, port):
         """
         initialize the heartbeat instance
@@ -13,7 +15,10 @@ class UDPHeartbeat:
         :param port: heartbeat port
         """
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sock.bind((host, port))
+
+        if not self.has_set:
+            self._sock.bind((host, port))
+            self.has_set = True
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     def _process_socket(self):

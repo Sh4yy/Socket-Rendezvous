@@ -16,7 +16,11 @@ def authorized(func):
         if not auth:
             return abort(400)
 
-        method, token = auth.split(' ', 1)
+        try:
+            method, token = auth.split(' ', 1)
+        except:
+            return abort(400)
+
         if method != 'Bearer' or not token:
             return abort(400)
 

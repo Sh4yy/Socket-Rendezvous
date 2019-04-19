@@ -27,9 +27,9 @@ class PeerID:
 
 class Client(ScheduleItem):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         peer = PeerID()
-        super(ScheduleItem).__init__(peer.id_hex, *args, **kwargs)
+        super().__init__(peer.id_hex)
         self.private_id = peer.key_hex
         self.peer = peer
         self.host = None
